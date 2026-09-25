@@ -44,7 +44,7 @@ jobs:
         with:
           gradle-version: '9.7.1'
       - name: Select build configuration
-        run: cp "$BUILD_FILE" build.gradle
+        run: cp "$BUILD_FILE" build.gradle.tmp && mv build.gradle.tmp build.gradle
         env:
           BUILD_FILE: ${{ matrix.build_file }}
       - name: Build
