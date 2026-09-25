@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "right-click-close",
+  "version": "1.0.0",
+  "name": "Right Click Close",
+  "description": "Closes the current menu when you right-click.",
+  "environment": "client",
+  "mixins": [
+    "right-click-close.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.2",
+    "java": ">=25"
+  }
+}
