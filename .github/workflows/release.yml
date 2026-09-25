@@ -1,0 +1,122 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version, for example 1.0.1
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      release_commit: ${{ steps.release_commit.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.+-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release version: $RELEASE_VERSION" >&2
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$RELEASE_VERSION" >/dev/null; then
+            echo "Release tag v$RELEASE_VERSION already exists" >&2
+            exit 1
+          fi
+          current_version=$(awk -F= '$1 == "mod_version" { print $2 }' gradle.properties)
+          if [ "$current_version" = "$RELEASE_VERSION" ]; then
+            echo "gradle.properties already contains version $RELEASE_VERSION" >&2
+            exit 1
+          fi
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "The working tree must be clean before releasing" >&2
+            exit 1
+          fi
+
+      - name: Update version and generate changelog
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          previous_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          {
+            echo '## Changes'
+            echo
+            if [ -n "$previous_tag" ]; then
+              git log "$previous_tag..HEAD" --pretty=format:'- %s (%h)'
+            else
+              git log --pretty=format:'- %s (%h)'
+            fi
+          } > "$RUNNER_TEMP/release-notes.md"
+          if [ ! -s "$RUNNER_TEMP/release-notes.md" ] || [ "$(wc -l < "$RUNNER_TEMP/release-notes.md")" -le 2 ]; then
+            printf '\n- No changes\n' >> "$RUNNER_TEMP/release-notes.md"
+          fi
+          sed -i "s/^mod_version=.*/mod_version=$RELEASE_VERSION/" gradle.properties
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}/release-notes.md
+
+      - name: Commit release version
+        id: release_commit
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add gradle.properties
+          git diff --cached --quiet && { echo 'No version change to commit' >&2; exit 1; }
+          git commit -m "chore: release $RELEASE_VERSION"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "value=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ needs.prepare.outputs.release_commit }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: |
+            right-click-close-*
+            release-notes
+          merge-multiple: true
+
+      - name: Create GitHub release
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_COMMIT: ${{ needs.prepare.outputs.release_commit }}
+        run: |
+          set -euo pipefail
+          gh release create "v$RELEASE_VERSION" \
+            --target "$RELEASE_COMMIT" \
+            --title "Right Click Close v$RELEASE_VERSION" \
+            --notes-file artifacts/release-notes.md \
+            artifacts/*.jar
