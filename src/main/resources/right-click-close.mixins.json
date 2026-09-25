@@ -4,7 +4,7 @@
   "package": "com.example.rightclickclose.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "ScreenMixin"
+    "ElementMixin"
   ],
   "injectors": {
     "defaultRequire": 1
