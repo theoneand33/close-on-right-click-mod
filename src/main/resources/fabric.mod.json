@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "Right Click Close",
   "description": "Closes the current menu when you right-click.",
+  "icon": "icon.png",
   "environment": "client",
   "mixins": [
     "right-click-close.mixins.json"
