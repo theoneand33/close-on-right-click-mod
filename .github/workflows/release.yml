@@ -95,16 +95,13 @@ jobs:
       ref: ${{ needs.prepare.outputs.release_commit }}
 
   release:
-    needs: build
+    needs: [prepare, build]
     runs-on: ubuntu-latest
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-          pattern: |
-            right-click-close-*
-            release-notes
           merge-multiple: true
 
       - name: Create GitHub release
