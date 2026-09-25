@@ -1,6 +1,6 @@
 # Right Click Close
 
-![Right Click Close icon](src/main/resources/icon.png)
+![Right Click Close icon](src/main/resources/icon.png width=200 height=200)
 
 A simple Fabric mod that closes the current Minecraft menu when you right-click.
 
