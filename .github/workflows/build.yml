@@ -26,8 +26,8 @@ jobs:
             java: '21'
             artifact: 1.21
           - minecraft: 26.3
-            yarn: ''
-            build_file: ''
+            yarn: 1.21.11+build.6
+            build_file: build.gradle
             java: '25'
             artifact: 26.1
 
@@ -44,20 +44,11 @@ jobs:
         with:
           gradle-version: '9.7.1'
       - name: Select build configuration
-        if: matrix.build_file != ''
         run: cp "$BUILD_FILE" build.gradle
         env:
           BUILD_FILE: ${{ matrix.build_file }}
       - name: Build
-        env:
-          MINECRAFT_VERSION: ${{ matrix.minecraft }}
-          YARN_VERSION: ${{ matrix.yarn }}
-        run: |
-          if [ -n "$YARN_VERSION" ]; then
-            gradle build -Pminecraft_version="$MINECRAFT_VERSION" -Pyarn_mappings="$YARN_VERSION"
-          else
-            gradle build -Pminecraft_version="$MINECRAFT_VERSION"
-          fi
+        run: gradle build -Pminecraft_version="${{ matrix.minecraft }}" -Pyarn_mappings="${{ matrix.yarn }}"
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
