@@ -14,7 +14,8 @@ repositories {
     maven { url = 'https://maven.fabricmc.net/' }
 }
 
-def legacyPatch = project.minecraft_version.split('\\.')[2] ?: '0'
+def legacyVersion = project.minecraft_version.split('\\.')
+def legacyPatch = legacyVersion.length > 2 ? legacyVersion[2] : '0'
 def legacySource = legacyPatch.toInteger() >= 9 ? 'src/legacy-new/java' : 'src/legacy/java'
 sourceSets.main.java.srcDirs = [legacySource]
 
