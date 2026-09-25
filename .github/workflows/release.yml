@@ -16,8 +16,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      release_commit: ${{ steps.release_commit.outputs.value }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -66,7 +68,14 @@ jobs:
           fi
           sed -i "s/^mod_version=.*/mod_version=$RELEASE_VERSION/" gradle.properties
 
+      - name: Upload release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}/release-notes.md
+
       - name: Commit release version
+        id: release_commit
         env:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
@@ -77,16 +86,37 @@ jobs:
           git diff --cached --quiet && { echo 'No version change to commit' >&2; exit 1; }
           git commit -m "chore: release $RELEASE_VERSION"
           git push origin "HEAD:${GITHUB_REF_NAME}"
-          echo "RELEASE_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "value=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ needs.prepare.outputs.release_commit }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: |
+            right-click-close-*
+            release-notes
+          merge-multiple: true
 
       - name: Create GitHub release
         env:
+          GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_COMMIT: ${{ env.RELEASE_COMMIT }}
+          RELEASE_COMMIT: ${{ needs.prepare.outputs.release_commit }}
         run: |
           set -euo pipefail
           gh release create "v$RELEASE_VERSION" \
             --target "$RELEASE_COMMIT" \
             --title "Right Click Close v$RELEASE_VERSION" \
-            --notes-file "$RUNNER_TEMP/release-notes.md"
+            --notes-file artifacts/release-notes.md \
+            artifacts/*.jar
