@@ -3,7 +3,6 @@
   "minVersion": "0.8",
   "package": "com.example.rightclickclose.mixin",
   "compatibilityLevel": "JAVA_${java_compatibility}",
-  "client": [
-    "ElementMixin"
-  ]
+  "plugin": "com.example.rightclickclose.mixin.CompatibilityPlugin",
+  "client": ${mixins}
 }

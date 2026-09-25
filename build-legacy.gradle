@@ -6,7 +6,7 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = "${project.archives_base_name}-${project.minecraft_version}"
+    archivesName = "${project.archives_base_name}-1.21"
 }
 
 repositories {
@@ -14,10 +14,7 @@ repositories {
     maven { url = 'https://maven.fabricmc.net/' }
 }
 
-def legacyVersion = project.minecraft_version.split('\\.')
-def legacyPatch = legacyVersion.length > 2 ? legacyVersion[2] : '0'
-def legacySource = legacyPatch.toInteger() >= 9 ? 'src/legacy-new/java' : 'src/legacy/java'
-sourceSets.main.java.srcDirs = [legacySource]
+sourceSets.main.java.srcDirs = ['src/legacy-universal/java', 'src/universal/java']
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -36,6 +33,8 @@ processResources {
     filesMatching('*.json') {
         expand 'version': project.version,
                 'minecraft_version': project.minecraft_version,
+                'minecraft_dependency': '>=1.21 <1.22',
+                'mixins': '["LegacyElementMixin", "ModernElementMixin"]',
                 'java_compatibility': '21'
     }
 }

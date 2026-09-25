@@ -20,74 +20,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - minecraft: 1.21
-            yarn: 1.21+build.9
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.1
-            yarn: 1.21.1+build.3
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.2
-            yarn: 1.21.2+build.1
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.3
-            yarn: 1.21.3+build.2
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.4
-            yarn: 1.21.4+build.8
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.5
-            yarn: 1.21.5+build.1
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.6
-            yarn: 1.21.6+build.1
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.7
-            yarn: 1.21.7+build.8
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.8
-            yarn: 1.21.8+build.1
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.9
-            yarn: 1.21.9+build.1
-            build_file: build-legacy.gradle
-            java: '21'
-          - minecraft: 1.21.10
-            yarn: 1.21.10+build.3
-            build_file: build-legacy.gradle
-            java: '21'
           - minecraft: 1.21.11
             yarn: 1.21.11+build.6
             build_file: build-legacy.gradle
             java: '21'
-          - minecraft: 26.1
-            yarn: ''
-            build_file: ''
-            java: '25'
-          - minecraft: 26.1.1
-            yarn: ''
-            build_file: ''
-            java: '25'
-          - minecraft: 26.1.2
-            yarn: ''
-            build_file: ''
-            java: '25'
-          - minecraft: 26.2
-            yarn: ''
-            build_file: ''
-            java: '25'
+            artifact: 1.21
           - minecraft: 26.3
             yarn: ''
             build_file: ''
             java: '25'
+            artifact: 26.1
 
     runs-on: ubuntu-latest
     steps:
@@ -119,6 +61,6 @@ jobs:
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
-          name: right-click-close-${{ matrix.minecraft }}
+          name: right-click-close-${{ matrix.artifact || matrix.minecraft }}
           path: build/libs/*.jar
           if-no-files-found: error
