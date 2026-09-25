@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ElementMixin {
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void rightClickClosesMenu(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
-        Minecraft client = Minecraft.getInstance();
-        if (button.button() == 1 && action == 1 && client.gui.screen() != null) {
-            client.gui.screen().onClose();
+        var screen = Minecraft.getInstance().gui.screen();
+        if (button.button() == 1 && action == 1 && screen != null) {
+            screen.onClose();
             ci.cancel();
         }
     }
