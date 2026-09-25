@@ -14,7 +14,7 @@ public abstract class ElementMixin {
     private void rightClickClosesMenu(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
         Minecraft client = Minecraft.getInstance();
         if (button.button() == 1 && action == 1 && client.gui.screen() != null) {
-            client.setScreenAndShow(null);
+            client.gui.screen().onClose();
             ci.cancel();
         }
     }
