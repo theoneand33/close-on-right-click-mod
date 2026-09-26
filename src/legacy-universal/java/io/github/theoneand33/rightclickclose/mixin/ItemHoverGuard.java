@@ -1,4 +1,4 @@
-package com.example.rightclickclose.mixin;
+package io.github.theoneand33.rightclickclose.mixin;
 
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;

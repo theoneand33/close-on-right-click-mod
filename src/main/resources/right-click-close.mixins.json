@@ -1,8 +1,8 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.example.rightclickclose.mixin",
+  "package": "io.github.theoneand33.rightclickclose.mixin",
   "compatibilityLevel": "JAVA_${java_compatibility}",
-  "plugin": "com.example.rightclickclose.mixin.CompatibilityPlugin",
+  "plugin": "io.github.theoneand33.rightclickclose.mixin.CompatibilityPlugin",
   "client": ${mixins}
 }

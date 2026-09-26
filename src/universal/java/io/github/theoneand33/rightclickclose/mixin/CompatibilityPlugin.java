@@ -1,4 +1,4 @@
-package com.example.rightclickclose.mixin;
+package io.github.theoneand33.rightclickclose.mixin;
 
 import java.util.List;
 import java.util.Set;

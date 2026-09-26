@@ -1,4 +1,4 @@
-package com.example.rightclickclose.mixin;
+package io.github.theoneand33.rightclickclose.mixin;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Click;
