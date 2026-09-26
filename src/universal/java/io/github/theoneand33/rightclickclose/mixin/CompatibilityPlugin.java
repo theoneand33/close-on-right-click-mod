@@ -28,12 +28,36 @@ public final class CompatibilityPlugin implements IMixinConfigPlugin {
     }
 
     private boolean versionSupportsLegacy() {
-        return minecraftVersion.equals("1.21") || minecraftVersion.startsWith("1.21.")
-                && Integer.parseInt(minecraftVersion.substring(5).split("\\.")[0]) < 9;
+        if (minecraftVersion.equals("1.21")) {
+            return true;
+        }
+        Integer minor = minorAfter121();
+        return minor != null && minor < 9;
     }
 
     private boolean versionSupportsModern() {
-        return minecraftVersion.startsWith("1.21.") && Integer.parseInt(minecraftVersion.substring(5).split("\\.")[0]) >= 9;
+        Integer minor = minorAfter121();
+        return minor != null && minor >= 9;
+    }
+
+    // ponytail: leading-digits parse, suffixes like +build.6/-rc1 must not crash mixin loading
+    private Integer minorAfter121() {
+        if (!minecraftVersion.startsWith("1.21.")) {
+            return null;
+        }
+        String rest = minecraftVersion.substring(5);
+        int end = 0;
+        while (end < rest.length() && Character.isDigit(rest.charAt(end))) {
+            end++;
+        }
+        if (end == 0) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(rest.substring(0, end));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Override

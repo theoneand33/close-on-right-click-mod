@@ -18,19 +18,29 @@ public final class ItemHoverGuard {
     }
 
     private static boolean hoveredSlotHasStack(Screen screen) {
-        Class<?> type = screen.getClass();
-        while (type != null) {
-            try {
-                java.lang.reflect.Field field = type.getDeclaredField("focusedSlot");
-                field.setAccessible(true);
-                Object slot = field.get(screen);
-                return slot instanceof Slot slotTyped && slotTyped.hasStack();
-            } catch (NoSuchFieldException e) {
-                type = type.getSuperclass();
-            } catch (ReflectiveOperationException e) {
-                return false;
+        // ponytail: Yarn names it focusedSlot, try Mojmap hoveredSlot too if mappings drift
+        for (String name : new String[] {"focusedSlot", "hoveredSlot"}) {
+            Object slot = getSlotField(screen, name);
+            if (slot instanceof Slot slotTyped && slotTyped.hasStack()) {
+                return true;
             }
         }
         return false;
+    }
+
+    private static Object getSlotField(Screen screen, String name) {
+        Class<?> type = screen.getClass();
+        while (type != null) {
+            try {
+                java.lang.reflect.Field field = type.getDeclaredField(name);
+                field.setAccessible(true);
+                return field.get(screen);
+            } catch (NoSuchFieldException e) {
+                type = type.getSuperclass();
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return null;
+            }
+        }
+        return null;
     }
 }

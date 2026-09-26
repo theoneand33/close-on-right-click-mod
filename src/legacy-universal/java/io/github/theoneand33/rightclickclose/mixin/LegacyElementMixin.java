@@ -13,6 +13,9 @@ public interface LegacyElementMixin {
     default void rightClickClosesMenu(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (button == 1 && client.currentScreen != null) {
+            if (!client.currentScreen.shouldCloseOnEsc()) {
+                return;
+            }
             if (ItemHoverGuard.isHoveringItemOrCarrying(client.currentScreen)) {
                 return;
             }

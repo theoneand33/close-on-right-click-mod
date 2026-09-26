@@ -11,18 +11,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MouseHandler.class)
 public abstract class ElementMixin {
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
-    private void rightClickClosesMenu(long window, MouseButtonInfo button, int action, CallbackInfo ci) throws ReflectiveOperationException {
+    private void rightClickClosesMenu(long window, MouseButtonInfo button, int action, CallbackInfo ci) {
         if (button.button() != 1 || action != 1) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
-        Object screen = getCurrentScreen(client);
-        if (screen != null) {
-            if (isHoveringItemOrCarrying(screen)) {
+        try {
+            Minecraft client = Minecraft.getInstance();
+            Object screen = getCurrentScreen(client);
+            if (screen == null) {
+                return;
+            }
+            if (!shouldClose(screen) || isHoveringItemOrCarrying(screen)) {
                 return;
             }
             screen.getClass().getMethod("onClose").invoke(screen);
             ci.cancel();
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            // ponytail: fail-closed, a failed lookup must never crash the game thread
         }
     }
 
@@ -35,28 +40,50 @@ public abstract class ElementMixin {
                     return true;
                 }
             }
-        } catch (ReflectiveOperationException ignored) {
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
         }
         try {
             Object slot = getSlotField(screen, "hoveredSlot");
             if (slot != null && (boolean) slot.getClass().getMethod("hasItem").invoke(slot)) {
                 return true;
             }
-        } catch (ReflectiveOperationException ignored) {
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
         }
         return false;
     }
 
+    private static boolean shouldClose(Object screen) {
+        try {
+            Object result = screen.getClass().getMethod("shouldCloseOnEsc").invoke(screen);
+            return !(result instanceof Boolean) || (boolean) result;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return true;
+        }
+    }
+
     // ponytail: three lookups kept, screen moved from Minecraft (26.1) to Gui (26.2+)
-    private static Object getCurrentScreen(Minecraft client) throws ReflectiveOperationException {
+    private static Object getCurrentScreen(Minecraft client) {
+        if (client == null) {
+            return null;
+        }
         try {
             return client.getClass().getField("screen").get(client);
-        } catch (NoSuchFieldException ignored) {
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
         }
-        Object gui = client.getClass().getField("gui").get(client);
+        Object gui;
+        try {
+            gui = client.getClass().getField("gui").get(client);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+        if (gui == null) {
+            return null;
+        }
         try {
             return gui.getClass().getMethod("screen").invoke(gui);
         } catch (NoSuchMethodException ignored) {
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
         }
         Class<?> type = gui.getClass();
         while (type != null) {
@@ -66,12 +93,14 @@ public abstract class ElementMixin {
                 return field.get(gui);
             } catch (NoSuchFieldException e) {
                 type = type.getSuperclass();
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return null;
             }
         }
         return null;
     }
 
-    private static Object getSlotField(Object screen, String name) throws ReflectiveOperationException {
+    private static Object getSlotField(Object screen, String name) {
         Class<?> type = screen.getClass();
         while (type != null) {
             try {
@@ -80,6 +109,8 @@ public abstract class ElementMixin {
                 return field.get(screen);
             } catch (NoSuchFieldException e) {
                 type = type.getSuperclass();
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return null;
             }
         }
         return null;
