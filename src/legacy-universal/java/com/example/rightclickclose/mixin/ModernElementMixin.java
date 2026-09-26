@@ -14,6 +14,9 @@ public interface ModernElementMixin {
     default void rightClickClosesMenu(Click click, boolean doubled, CallbackInfoReturnable<Boolean> cir) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (click.button() == 1 && client.currentScreen != null) {
+            if (ItemHoverGuard.isHoveringItemOrCarrying(client.currentScreen)) {
+                return;
+            }
             client.currentScreen.close();
             cir.setReturnValue(true);
         }
