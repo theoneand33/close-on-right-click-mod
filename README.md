@@ -16,7 +16,7 @@ A simple Fabric mod that closes the current Minecraft menu when you right-click.
 gradle build
 ```
 
-The default build targets Minecraft 26.1–26.3. To build the single jar for every Minecraft 1.21.x release, use:
+The default build targets Minecraft 26.1–26.3. To build a jar Minecraft 1.21.x release, use:
 
 ```text
 cp build-legacy.gradle build.gradle && gradle build -Pminecraft_version=1.21.11 -Pyarn_mappings=1.21.11+build.6
