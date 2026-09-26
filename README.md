@@ -4,6 +4,8 @@
 
 A simple Fabric mod that closes the current Minecraft menu when you right-click.
 
+Right-click does nothing while you carry an item on the cursor or point at a slot that holds an item, so a placement or pickup in a container still works.
+
 ## Requirements
 
 - Minecraft 1.21–26.3

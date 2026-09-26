@@ -3,7 +3,7 @@
   "id": "right-click-close",
   "version": "${version}",
   "name": "Right Click Close",
-  "description": "Closes the current menu when you right-click.",
+  "description": "Closes the current menu on right-click. Skips when carrying or pointing at an item.",
   "icon": "icon.png",
   "environment": "client",
   "mixins": [
