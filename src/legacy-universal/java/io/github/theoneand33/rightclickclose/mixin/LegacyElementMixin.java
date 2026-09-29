@@ -16,7 +16,8 @@ public interface LegacyElementMixin {
             if (!client.currentScreen.shouldCloseOnEsc()) {
                 return;
             }
-            if (ItemHoverGuard.isHoveringItemOrCarrying(client.currentScreen)) {
+            if (ItemHoverGuard.isHoveringItemOrCarrying(client.currentScreen)
+                    || ItemHoverGuard.isXaeroScreen(client.currentScreen)) {
                 return;
             }
             client.currentScreen.close();

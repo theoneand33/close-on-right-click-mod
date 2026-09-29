@@ -17,6 +17,16 @@ public final class ItemHoverGuard {
         return hoveredSlotHasStack(screen);
     }
 
+    // ponytail: Xaero's world map uses right-click for its own menus, never steal it
+    public static boolean isXaeroScreen(Screen screen) {
+        for (Class<?> type = screen.getClass(); type != null; type = type.getSuperclass()) {
+            if (type.getName().startsWith("xaero.")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean hoveredSlotHasStack(Screen screen) {
         // ponytail: Yarn names it focusedSlot, try Mojmap hoveredSlot too if mappings drift
         for (String name : new String[] {"focusedSlot", "hoveredSlot"}) {

@@ -21,7 +21,7 @@ public abstract class ElementMixin {
             if (screen == null) {
                 return;
             }
-            if (!shouldClose(screen) || isHoveringItemOrCarrying(screen)) {
+            if (!shouldClose(screen) || isXaeroScreen(screen) || isHoveringItemOrCarrying(screen)) {
                 return;
             }
             screen.getClass().getMethod("onClose").invoke(screen);
@@ -48,6 +48,16 @@ public abstract class ElementMixin {
                 return true;
             }
         } catch (ReflectiveOperationException | RuntimeException ignored) {
+        }
+        return false;
+    }
+
+    // ponytail: Xaero's world map uses right-click for its own menus, never steal it
+    private static boolean isXaeroScreen(Object screen) {
+        for (Class<?> type = screen.getClass(); type != null; type = type.getSuperclass()) {
+            if (type.getName().startsWith("xaero.")) {
+                return true;
+            }
         }
         return false;
     }
