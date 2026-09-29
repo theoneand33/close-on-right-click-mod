@@ -1,4 +1,4 @@
-# Right Click Close
+# Right click to close menu
 
 <img src="src/main/resources/icon.png" width="256" alt="Right Click Close icon">   
 
